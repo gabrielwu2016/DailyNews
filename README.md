@@ -11,98 +11,84 @@
 - ⚡ 纯静态，极速加载
 - 🔍 SEO 友好
 
+## 🚀 部署到 GitHub Pages（推荐）
+
+### 方式一：手动部署（简单推荐）
+
+1. **创建GitHub仓库**
+   - 访问 https://github.com/new
+   - 仓库名填写：`geek-daily-blog`
+   - 选择 **Public**（公开）
+   - 点击 **Create repository**
+
+2. **初始化本地仓库**
+   ```bash
+   git init
+   git add -A
+   git commit -m "Initial commit"
+   ```
+
+3. **关联并推送**
+   ```bash
+   git branch -M main
+   git remote add origin https://github.com/你的用户名/geek-daily-blog.git
+   git push -u origin main
+   ```
+
+4. **开启GitHub Pages**
+   - 进入仓库页面 → Settings → Pages
+   - Source 选择 "Deploy from a branch"
+   - Branch 选择 "main"，文件夹选择 "/ (root)"
+   - 点击 Save
+
+5. **等待部署**
+   - 约1-3分钟后，访问 `https://你的用户名.github.io/geek-daily-blog/`
+
+### 方式二：运行部署脚本
+
+```bash
+deploy.bat
+```
+按提示输入GitHub用户名即可。
+
+---
+
 ## 📁 目录结构
 
 ```
 my-blog/
 ├── source/          # Markdown 文章源文件
-├── public/          # 生成的静态网站
+├── public/          # 生成的静态网站（部署这个目录）
 │   ├── css/         # 样式文件
 │   ├── js/          # JavaScript 文件
 │   ├── posts/       # 文章 HTML
 │   └── index.html   # 首页
 ├── build.py         # 构建脚本
+├── deploy.bat       # 部署脚本
 └── README.md        # 本文件
 ```
 
-## 🚀 快速开始
-
-### 1. 安装依赖
-
-```bash
-pip install markdown
-```
-
-### 2. 添加文章
+## 📝 添加新文章
 
 将 Markdown 文件放入 `source/` 目录，文件名格式：
 ```
 YYYY-MM-DD-文章标题.md
 ```
 
-例如：
-```
-2026-02-14-android-17-beta-1.md
-```
-
-### 3. 构建网站
-
+然后运行构建：
 ```bash
 python build.py
 ```
 
-### 4. 预览
+或直接创建 HTML 文件放入 `public/posts/` 目录。
 
-在 `public/` 目录下启动本地服务器：
+## 🔧 本地预览
 
 ```bash
 cd public
 python -m http.server 8000
 ```
-
-然后访问 http://localhost:8000
-
-## 📝 文章格式
-
-```markdown
-# 文章标题
-
-正文内容...
-
-## 二级标题
-
-- 列表项1
-- 列表项2
-
-> 引用内容
-
-```代码块```
-```
-
-## 🚀 部署
-
-将 `public/` 目录下的所有文件上传到你的 Web 服务器即可。
-
-支持的平台：
-- GitHub Pages
-- Vercel
-- Netlify
-- Cloudflare Pages
-- 任何静态托管服务
-
-## 🔧 自定义
-
-### 修改样式
-
-编辑 `public/css/style.css` 文件
-
-### 修改模板
-
-编辑 `build.py` 中的 HTML 模板
-
-### 添加新页面
-
-直接在 `public/` 目录下创建 HTML 文件
+访问 http://localhost:8000
 
 ## 📄 许可证
 
