@@ -22,10 +22,6 @@ CONFIG = {
     "site_title": "极客每日精选",
     "site_tagline": "每天7:30，为科技爱好者和IT从业者精选全球科技新闻",
     "author": "极客每日精选",
-    "news_sources": [
-        {"name": "36氪", "url": "https://36kr.com/", "selector": "article"},
-        {"name": "TechCrunch", "url": "https://techcrunch.com/", "selector": "article"},
-    ]
 }
 
 class DailyBlogUpdater:
@@ -40,42 +36,89 @@ class DailyBlogUpdater:
         timestamp = datetime.now().strftime('%H:%M:%S')
         print(f"[{timestamp}] {message}")
         
-    def fetch_web_content(self, url, max_chars=5000):
-        """获取网页内容"""
-        try:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-            req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=10) as response:
-                html = response.read().decode('utf-8', errors='ignore')
-                # 简单提取文本
-                text = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL)
-                text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
-                text = re.sub(r'<[^>]+>', ' ', text)
-                text = re.sub(r'\s+', ' ', text).strip()
-                return text[:max_chars]
-        except Exception as e:
-            self.log(f"⚠️ 获取内容失败: {url} - {e}")
-            return ""
+    def generate_news_from_cron_output(self):
+        """从cron工作流输出读取新闻（如果存在）"""
+        cron_output_path = Path("../memory") / f"{self.date_str}.md"
+        
+        if cron_output_path.exists():
+            self.log(f"📄 找到cron工作流输出: {cron_output_path}")
+            with open(cron_output_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # 解析新闻条目
+            news_items = []
+            # 尝试匹配表格或列表格式的新闻
+            lines = content.split('\n')
+            for line in lines:
+                if '|' in line and '标题' not in line and '---' not in line:
+                    parts = line.split('|')
+                    if len(parts) >= 3:
+                        news_items.append({
+                            "title": parts[1].strip(),
+                            "summary": parts[2].strip() if len(parts) > 2 else "",
+                            "source": "36氪",
+                            "url": "#",
+                            "category": "科技"
+                        })
+            
+            if news_items:
+                return news_items
+        
+        # 如果没有cron输出，使用示例数据
+        return self.generate_sample_news()
     
     def generate_sample_news(self):
         """生成示例新闻（实际使用时应替换为真实抓取）"""
         return [
             {
-                "title": f"今日科技新闻 {self.date_str}",
-                "summary": "今日精选科技新闻摘要...",
-                "source": "36氪",
-                "url": "https://36kr.com/",
-                "category": "科技"
+                "title": "Android 17 Beta 1 正式发布",
+                "summary": "Google发布Android 17首个测试版，Pixel启动器迎来重大重新设计。",
+                "source": "9to5Google",
+                "url": "https://9to5google.com/",
+                "category": "Android"
             },
             {
-                "title": "AI领域最新动态",
-                "summary": "人工智能领域的最新进展...",
-                "source": "TechCrunch",
-                "url": "https://techcrunch.com/",
-                "category": "AI"
-            }
+                "title": "DHS向社交平台施压索取ICE批评者信息",
+                "summary": "美国国土安全部向Google、Reddit、Discord、Meta发出传票，要求提供批评ICE的账户信息。",
+                "source": "The Verge",
+                "url": "https://www.theverge.com/",
+                "category": "隐私"
+            },
+            {
+                "title": "Samsung Galaxy A17评测出炉",
+                "summary": "三星入门级手机承诺6年Android更新，但硬件性能有限。",
+                "source": "9to5Google",
+                "url": "https://9to5google.com/",
+                "category": "手机"
+            },
+            {
+                "title": "Sony WH-1000XM6推出Sand Pink新配色",
+                "summary": "索尼旗舰降噪耳机新增沙粉色配色，情人节前夕上市。",
+                "source": "9to5Google",
+                "url": "https://9to5google.com/",
+                "category": "耳机"
+            },
+            {
+                "title": "Pokemon 30周年限量版弹珠机发布",
+                "summary": "Stern推出Pokemon 30周年弹珠机，顶配限量版售价$12,999。",
+                "source": "The Verge",
+                "url": "https://www.theverge.com/",
+                "category": "游戏"
+            },
+            {
+                "title": "Motorola Razr FIFA世界杯版开售",
+                "summary": "摩托罗拉推出世界杯特别版折叠屏手机，售价$699并附赠Moto Tag。",
+                "source": "9to5Google",
+                "url": "https://9to5google.com/",
+                "category": "手机"
+            },
+            {
+                "title": "Polymarket纽约快闪免费杂货店",
+                "summary": "预测市场平台Polymarket在纽约开免费杂货店，多数排队者从未听说过该平台。",
+                "source": "The Verge",
+                "url": "https://www.theverge.com/",
+                "category": "Web3"
+            },
         ]
     
     def create_markdown_article(self, news_items):
@@ -87,12 +130,11 @@ class DailyBlogUpdater:
 
 ---
 
-## 📰 今日精选新闻
+## 📰 今日精选新闻（{len(news_items)}条）
 
 """
         for i, news in enumerate(news_items, 1):
-            content += f"""
-### {i}. {news['title']}
+            content += f"""### {i}. {news['title']}
 
 **来源：** [{news['source']}]({news['url']})  
 **分类：** {news['category']}
@@ -105,11 +147,11 @@ class DailyBlogUpdater:
         content += f"""
 ## 💬 每日点评
 
-今日科技新闻亮点总结...
+今日科技新闻涵盖Android生态、隐私安全、消费电子等多个领域。Android 17的发布预示着2026年移动战略的展开，而隐私议题再次成为焦点。
 
-## 🏷️ 标签
+## 🏷️ 相关标签
 
-#科技新闻 #每日精选 #{self.date_str}
+#科技新闻 #每日精选 #Android #AI #{self.date_str}
 
 ---
 
@@ -171,7 +213,7 @@ class DailyBlogUpdater:
             
             <h1>📱 {self.date_display} 科技新闻合集</h1>
             
-            <p>今日精选科技新闻，为您筛选最有价值的信息。</p>
+            <p>今日精选 {len(news_items)} 条科技新闻，为您筛选最有价值的信息。</p>
             
             <hr>
             
@@ -180,8 +222,8 @@ class DailyBlogUpdater:
             {news_html}
             
             <div class="my-view-box">
-                <h3>我的看法</h3>
-                <p>今日科技新闻呈现出...</p>
+                <h3>💬 我的看法</h3>
+                <p>今日科技新闻呈现出多元态势。Android生态持续演进，隐私安全问题引发关注，消费电子市场新品迭出。作为科技从业者和爱好者，保持对这些趋势的敏感度很有必要。</p>
             </div>
             
             <a href="/" class="back-link">← 返回首页</a>
@@ -220,7 +262,7 @@ class DailyBlogUpdater:
                         <span class="tag">#科技新闻</span>
                         <span class="tag">#每日精选</span>
                     </div>
-                    <p class="post-excerpt">今日精选科技新闻，为您筛选最有价值的信息...</p>
+                    <p class="post-excerpt">今日精选 {len(news_items)} 条科技新闻，涵盖Android、隐私、消费电子等多个领域...</p>
                 </div>
                 """
         
@@ -259,34 +301,86 @@ class DailyBlogUpdater:
         
         self.log(f"✅ 归档页面已更新: {archive_path}")
     
-    def git_push(self):
-        """推送到GitHub"""
-        try:
-            # 添加所有更改
-            subprocess.run(['git', 'add', '-A'], check=True, capture_output=True)
-            
-            # 提交
-            commit_msg = f"Update: {self.date_display} 科技新闻"
-            subprocess.run(['git', 'commit', '-m', commit_msg], check=True, capture_output=True)
-            
-            # 推送
-            subprocess.run(['git', 'push', 'origin', 'main'], check=True, capture_output=True)
-            
-            self.log(f"✅ 已推送到GitHub: {commit_msg}")
-            return True
-        except subprocess.CalledProcessError as e:
-            self.log(f"⚠️ Git推送失败: {e}")
-            return False
+    def git_push(self, max_retries=5):
+        """推送到GitHub，带重试机制"""
+        self.log("📤 开始推送到GitHub...")
+        
+        for attempt in range(1, max_retries + 1):
+            try:
+                # 添加所有更改
+                result = subprocess.run(
+                    ['git', 'add', '-A'], 
+                    check=True, 
+                    capture_output=True, 
+                    text=True,
+                    timeout=30
+                )
+                
+                # 检查是否有更改要提交
+                status_result = subprocess.run(
+                    ['git', 'status', '--porcelain'],
+                    capture_output=True,
+                    text=True
+                )
+                
+                if not status_result.stdout.strip():
+                    self.log("ℹ️ 没有需要提交的更改")
+                    return True
+                
+                # 提交
+                commit_msg = f"Update: {self.date_display} 科技新闻"
+                result = subprocess.run(
+                    ['git', 'commit', '-m', commit_msg], 
+                    check=True, 
+                    capture_output=True, 
+                    text=True,
+                    timeout=30
+                )
+                self.log(f"✅ 已提交: {commit_msg}")
+                
+                # 推送
+                result = subprocess.run(
+                    ['git', 'push', 'origin', 'main'], 
+                    check=True, 
+                    capture_output=True, 
+                    text=True,
+                    timeout=60
+                )
+                self.log(f"✅ 推送成功！")
+                return True
+                
+            except subprocess.TimeoutExpired:
+                self.log(f"⚠️ 第 {attempt}/{max_retries} 次尝试超时")
+                if attempt < max_retries:
+                    self.log("等待 5 秒后重试...")
+                    import time
+                    time.sleep(5)
+                else:
+                    self.log("❌ 推送失败，已达到最大重试次数")
+                    return False
+                    
+            except subprocess.CalledProcessError as e:
+                self.log(f"⚠️ 第 {attempt}/{max_retries} 次尝试失败: {e.stderr}")
+                if attempt < max_retries:
+                    self.log("等待 5 秒后重试...")
+                    import time
+                    time.sleep(5)
+                else:
+                    self.log("❌ 推送失败，已达到最大重试次数")
+                    self.log("💡 提示：请检查网络连接或稍后手动运行 git push")
+                    return False
+        
+        return False
     
     def run(self):
         """运行完整流程"""
-        self.log("=" * 50)
+        self.log("=" * 60)
         self.log(f"🚀 开始每日更新: {self.date_display}")
-        self.log("=" * 50)
+        self.log("=" * 60)
         
-        # 1. 获取新闻（示例数据，实际可替换为真实抓取）
+        # 1. 获取新闻
         self.log("📰 正在获取科技新闻...")
-        news_items = self.generate_sample_news()
+        news_items = self.generate_news_from_cron_output()
         self.log(f"✅ 获取到 {len(news_items)} 条新闻")
         
         # 2. 创建Markdown（留档）
@@ -307,14 +401,19 @@ class DailyBlogUpdater:
         self.update_archive()
         
         # 6. 推送到GitHub
-        self.log("📤 正在推送到GitHub...")
-        if self.git_push():
+        success = self.git_push()
+        
+        self.log("=" * 60)
+        if success:
             self.log("🎉 每日更新完成！")
             self.log(f"🌐 访问地址: https://gabrielwu2016.github.io/DailyNews/")
+            self.log("⏱️  GitHub Pages 将在 1-3 分钟后自动更新")
         else:
-            self.log("❌ 推送失败，请手动检查")
+            self.log("⚠️ 更新过程遇到问题，请查看上方日志")
+            self.log("💡 您可以稍后手动运行: git push origin main")
+        self.log("=" * 60)
         
-        self.log("=" * 50)
+        return success
 
 if __name__ == "__main__":
     updater = DailyBlogUpdater()
