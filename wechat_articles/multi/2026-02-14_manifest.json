@@ -1,0 +1,52 @@
+{
+  "date": "2026-02-14",
+  "articles": [
+    {
+      "order": 1,
+      "type": "overview",
+      "title": "今日精选",
+      "file": "wechat_articles\\multi\\2026-02-14_overview.html",
+      "content_type": "多篇图文第1篇"
+    },
+    {
+      "order": 2,
+      "type": "detail",
+      "title": "Android 17发布",
+      "file": "wechat_articles\\multi\\2026-02-14_detail_1.html",
+      "content_type": "多篇图文第2篇",
+      "category": "Android"
+    },
+    {
+      "order": 3,
+      "type": "detail",
+      "title": "DHS索取社交平台信息",
+      "file": "wechat_articles\\multi\\2026-02-14_detail_2.html",
+      "content_type": "多篇图文第3篇",
+      "category": "隐私"
+    },
+    {
+      "order": 4,
+      "type": "detail",
+      "title": "三星A17评测",
+      "file": "wechat_articles\\multi\\2026-02-14_detail_3.html",
+      "content_type": "多篇图文第4篇",
+      "category": "手机"
+    },
+    {
+      "order": 5,
+      "type": "detail",
+      "title": "索尼耳机新配色",
+      "file": "wechat_articles\\multi\\2026-02-14_detail_4.html",
+      "content_type": "多篇图文第5篇",
+      "category": "耳机"
+    },
+    {
+      "order": 6,
+      "type": "detail",
+      "title": "Pokemon弹珠机发布",
+      "file": "wechat_articles\\multi\\2026-02-14_detail_5.html",
+      "content_type": "多篇图文第6篇",
+      "category": "游戏"
+    }
+  ]
+}
